@@ -173,7 +173,7 @@ var calibratePath = 'C:/ASTRO/Calibrate'; // без финального "/" (@t
 var needCalibrate = true;
 //var needCalibrate = false;
 
-var needRegister  = true;
+//var needRegister  = true;
 var needRegister  = false;
 
 
