@@ -94,16 +94,17 @@ var fileData= getFileHeaderData(fileName) ;
 mastersFiles = matchMasterCalibrationFiles (cfgCalibratationMastersPath + (cgfUseBiningFolder? "/bin" + fileData.bin : "")  + "/" + fileData.instrument, fileData);
 registerFits(['c:/Users/bemchenko/Documents/DSlrRemote/test calibration/M63_20190407_B_600s_1x1_-30degC_0.0degN_000011919.FIT']);
 
-var filenametest='e:/DSlrRemote/M109/calibrated/registered/M109_20180424_Ha_600s_1x1_-25degC_0.0degN_000007687_c_cc_r.fit';
 //var fileData = getFileHeaderData(filenametest);
 //var normref = getNormalizationReferenceFile(fileData.object, fileData.filter));
 console.noteln( localNormalization([filenametest]) );
 
 */
+var filenametest='e:/DSlrRemote/M109/calibrated/registered/M109_20180424_Ha_600s_1x1_-25degC_0.0degN_000007687_c_cc_r.fit';
+FilterOutFITS(filenametest);
 
 // START FILE SEARCH
 var DirCount=0; var FileTotalCount=0;
-searchDirectory(cfgInputPath);
+//searchDirectory(cfgInputPath);
 
 
 //Finish working
@@ -1145,68 +1146,62 @@ function localNormalization(files)
 }
 
 
-/**************************************
-function TestSubframeSelector
+/**************************************/
+function FilterOutFITS (fileName)
 {
    var P = new SubframeSelector;
-P.routine = SubframeSelector.prototype.OutputSubframes;
-P.subframes = [ // subframeEnabled, subframePath
-   [true, "E:/DSlrRemote/-NGC7640/calibrated/registered/NGC7640_20181007_L_600s_1x1_-25degC_0.0degN_000010576+++_c_cc_r.fit"],
-   [true, "E:/DSlrRemote/-NGC7640/calibrated/registered/NGC7640_20181007_L_600s_1x1_-25degC_0.0degN_000010577+++_c_cc_r.fit"],
-   [true, "E:/DSlrRemote/-NGC7640/calibrated/registered/NGC7640_20181007_L_600s_1x1_-25degC_0.0degN_000010578+++_c_cc_r.fit"],
-   [true, "E:/DSlrRemote/-NGC7640/calibrated/registered/NGC7640_20181007_L_600s_1x1_-25degC_0.0degN_000010579+++_c_cc_r.fit"],
-   [true, "E:/DSlrRemote/-NGC7640/calibrated/registered/NGC7640_20181007_L_600s_1x1_-25degC_0.0degN_000010580+++_c_cc_r.fit"],
 
-];
-P.fileCache = true;
-P.subframeScale = 1.0000;
-P.cameraGain = 1.0000;
-P.cameraResolution = SubframeSelector.prototype.Bits16;
-P.siteLocalMidnight = 24;
-P.scaleUnit = SubframeSelector.prototype.ArcSeconds;
-P.dataUnit = SubframeSelector.prototype.Electron;
-P.structureLayers = 5;
-P.noiseLayers = 0;
-P.hotPixelFilterRadius = 1;
-P.applyHotPixelFilter = false;
-P.noiseReductionFilterRadius = 0;
-P.sensitivity = 0.1000;
-P.peakResponse = 0.8000;
-P.maxDistortion = 0.5000;
-P.upperLimit = 1.0000;
-P.backgroundExpansion = 3;
-P.xyStretch = 1.5000;
-P.psfFit = SubframeSelector.prototype.Gaussian;
-P.psfFitCircular = false;
-P.pedestal = 0;
-P.roiX0 = 0;
-P.roiY0 = 0;
-P.roiX1 = 0;
-P.roiY1 = 0;
-P.inputHints = "";
-P.outputHints = "";
-P.outputDirectory = "E:/DSlrRemote/-NGC7640/calibrated/registered/3.1";
-P.outputExtension = ".xisf";
-P.outputPrefix = "";
-P.outputPostfix = "_a";
-P.outputKeyword = "SSWEIGHT";
-P.overwriteExistingFiles = false;
-P.onError = SubframeSelector.prototype.Continue;
-P.approvalExpression = "FWHM<3.1";
-P.weightingExpression = "";
-P.sortProperty = SubframeSelector.prototype.FWHM;
-P.graphProperty = SubframeSelector.prototype.FWHM;
-P.measurements = [ // measurementIndex, measurementEnabled, measurementLocked, measurementPath, measurementWeight, measurementFWHM, measurementEccentricity, measurementSNRWeight, measurementMedian, measurementMedianMeanDev, measurementNoise, measurementNoiseRatio, measurementStars, measurementStarResidual, measurementFWHMMeanDev, measurementEccentricityMeanDev, measurementStarResidualMeanDev
-   [1, false, false, "E:/DSlrRemote/-NGC7640/calibrated/registered/NGC7640_20181007_L_600s_1x1_-25degC_0.0degN_000010576+++_c_cc_r.fit", 0.0000, 3.6382, 0.5229, 8.1521, 0.0411667, 0.0031638, 0.0011081, 0.4355215, 2532, 0.0254, 0.313254, 0.0877, 0.0175],
-   [2, false, false, "E:/DSlrRemote/-NGC7640/calibrated/registered/NGC7640_20181007_L_600s_1x1_-25degC_0.0degN_000010577+++_c_cc_r.fit", 0.0000, 3.5892, 0.5268, 10.6834, 0.0403025, 0.0035906, 0.0010985, 0.4267355, 2533, 0.0263, 0.311772, 0.0919, 0.0170],
-   [3, false, false, "E:/DSlrRemote/-NGC7640/calibrated/registered/NGC7640_20181007_L_600s_1x1_-25degC_0.0degN_000010578+++_c_cc_r.fit", 0.0000, 3.5630, 0.5244, 12.3524, 0.0393132, 0.0038192, 0.0010867, 0.4230094, 2486, 0.0278, 0.337829, 0.0965, 0.0176],
-   [4, false, false, "E:/DSlrRemote/-NGC7640/calibrated/registered/NGC7640_20181007_L_600s_1x1_-25degC_0.0degN_000010579+++_c_cc_r.fit", 0.0000, 3.4635, 0.4995, 10.1013, 0.0383044, 0.0034175, 0.0010753, 0.4214250, 2446, 0.0299, 0.359801, 0.1124, 0.0178],
-   [5, false, false, "E:/DSlrRemote/-NGC7640/calibrated/registered/NGC7640_20181007_L_600s_1x1_-25degC_0.0degN_000010580+++_c_cc_r.fit", 0.0000, 3.4274, 0.5077, 9.3383, 0.0374431, 0.0032508, 0.0010638, 0.4238487, 2465, 0.0307, 0.390002, 0.1169, 0.0180],
-];
+   P.routine = SubframeSelector.prototype.MeasureSubframes;
+   P.subframes = [ // subframeEnabled, subframePath
+            [true, fileName]
+   ];
+   P.fileCache = true;
+   P.subframeScale = 1.0000;
+   P.cameraGain = 1.0000;
+   P.cameraResolution = SubframeSelector.prototype.Bits16;
+   P.siteLocalMidnight = 24;
+   P.scaleUnit = SubframeSelector.prototype.ArcSeconds;
+   P.dataUnit = SubframeSelector.prototype.Electron;
+   P.structureLayers = 5;
+   P.noiseLayers = 0;
+   P.hotPixelFilterRadius = 1;
+   P.applyHotPixelFilter = false;
+   P.noiseReductionFilterRadius = 0;
+   P.sensitivity = 0.1000;
+   P.peakResponse = 0.8000;
+   P.maxDistortion = 0.5000;
+   P.upperLimit = 1.0000;
+   P.backgroundExpansion = 3;
+   P.xyStretch = 1.5000;
+   P.psfFit = SubframeSelector.prototype.Gaussian;
+   P.psfFitCircular = false;
+   P.pedestal = 0;
+   P.roiX0 = 0;
+   P.roiY0 = 0;
+   P.roiX1 = 0;
+   P.roiY1 = 0;
+   P.inputHints = "";
+   P.outputHints = "";
+   P.outputDirectory = "E:/DSlrRemote";
+   P.outputExtension = ".fit";
+   P.outputPrefix = "";
+   P.outputPostfix = "_a";
+   P.outputKeyword = "SSWEIGHT";
+   P.overwriteExistingFiles = false;
+   P.onError = SubframeSelector.prototype.Continue;
+   P.approvalExpression = "FWHM<3.1";
+   P.weightingExpression = "";
+   P.sortProperty = SubframeSelector.prototype.FWHM;
+   P.graphProperty = SubframeSelector.prototype.FWHM;
 
+
+   var status = P.executeGlobal();
+
+   P.routine = SubframeSelector.prototype.OutputSubframes;
+
+   var status2 = P.executeGlobal();
 }
-**************************************************
-*/
+
 
 
 /*

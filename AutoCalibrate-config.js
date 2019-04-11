@@ -101,7 +101,7 @@ var cfgNeedNormalization  = true;
 
 //Пути к файлам
 //Папка с исходными фитами
-var cfgInputPath = 'e:/DSlrRemote/-LeoTrio1'; // без финального "/" (@todo убрать. если есть)
+var cfgInputPath = 'e:/DSlrRemote/-LeoTrio1/calibrated'; // без финального "/" (@todo убрать. если есть)
 //Искать в подпапках? В комбинации с cfgUseRelativeOutputPath будет просматривать все вложенные папки с калиброванными фитами!
 var cfgSearchInSubDirs = true;
 
