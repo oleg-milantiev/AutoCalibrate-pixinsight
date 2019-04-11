@@ -7,7 +7,14 @@
                      Version History
 
 
-   v0.4  04/04/2019    Boris Emchenko: вынести конфигурацию скрипта в отдельный раздел
+   v0.5  11/04/2019    Boris Emchenko:
+                       Wording, оптимизация кода
+
+   v0.4  04/04/2019    Boris Emchenko:
+                       Конфигурация скрипта вынесена в отдельный раздел
+                       Автоматический подбор биасов и дарков по температуре, дарков по экспозиции, флетов по фильтру и дате
+                       Выравнивание в случае наличия референса
+                       Нормализация в случае наличия референса
 
 
    v0.3  12/04/2017    Уход от получения данных о снимке в имени файла на данные
@@ -52,14 +59,6 @@
 */
 //////////////////////////////////////////////////////
 var T = new ElapsedTime;
-var BaseCalibratedOutputPath = ""; // инициализация как глобальной переменной. Дальше ей будет присваиваться значение внутри функции
-var CalibratedOutputPath = ""; // инициализация как глобальной переменной. Дальше ей будет присваиваться значение внутри функции
-var CosmetizedOutputPath = ""; // инициализация как глобальной переменной. Дальше ей будет присваиваться значение внутри функции
-var RegisteredOutputPath= ""; // инициализация как глобальной переменной. Дальше ей будет присваиваться значение внутри функции
-var NormalizedOutputPath= ""; // инициализация как глобальной переменной. Дальше ей будет присваиваться значение внутри функции
-
-var CosmeticsIconTemperature = 0; // инициализация как глобальной переменной. Дальше ей будет присваиваться значение внутри функции
-var CosmeticsIconExposure  = 0;// инициализация как глобальной переменной. Дальше ей будет присваиваться значение внутри функции
 
 console.abortEnabled = true; // allow stop
 console.show();
@@ -218,7 +217,7 @@ function getFileHeaderData(fileName)
 
    //C:/ASTRO/_z/newton/2016-10-13/53P-Van-Biesbroeck-001-L-bin1-1m.fit
    console.writeln();
-   console.noteln("Getting HeaderData for file: ");
+   console.note("Getting HeaderData for file: ");
    console.writeln(""+ fileName);
    console.writeln();
 
@@ -229,7 +228,7 @@ function getFileHeaderData(fileName)
 
       if (typeof headers[ keywords[k].name ] != 'undefined') {
          headers[ keywords[k].name ] = keywords[k].strippedValue;
-         console.writeln('header '+ keywords[k].name +'='+ keywords[k].strippedValue);
+         debug('header '+ keywords[k].name +'='+ keywords[k].strippedValue);
       }
    }
 
@@ -259,7 +258,7 @@ function getFileHeaderData(fileName)
       headers.FILTER = filters[ headers.FILTER ];
    }
    var filter = String.toUpperCase(headers.FILTER);
-   debug('Filter name after normalization: '+ headers.FILTER +'',2);
+   //debug('Filter name after normalization: '+ headers.FILTER +'',2);
 
    image.close();
 
@@ -327,12 +326,12 @@ function matchMasterCalibrationFiles(pathMasterLib, fileData)
 {
    console.writeln();
    console.noteln("Searching for matching Master Calibration Files");
+   console.writeln();
 
-   //1. Search lib dir for folders
 	var objFileFind = new FileFind;
-   var templib=[], templib_dirname = []; //empty array
 
 	// Begin search for temp libraries
+   var templib=[], templib_dirname = []; //empty array
    debug("Scaning library for available temperature packs in " + pathMasterLib + " ...", dbgNormal);
 	if ( objFileFind.begin( pathMasterLib + "/*" ) )
 	{
@@ -376,6 +375,12 @@ function matchMasterCalibrationFiles(pathMasterLib, fileData)
    }
    Console.writeln("Nearest temp for FITS temp " + fileData.temp + " is " + nearest_temp + " (difference = " + mindiff + ", matching folder = " +templib_dirname_nearest + ")");
    CosmeticsIconTemperature  = nearest_temp;
+   if (nearest_temp==100)
+   {
+      Console.criticalln ("Matching temperature wasn't found! Check dark library folder names and availability for given CCD-TEMP: " + fileData.temp + "deg");
+      return false;
+
+   }
 
 	// Begin search for nearest exposure for the dark
    debug ("Scaning for available darks of different exposure length in " + pathMasterLib + "/" + templib_dirname_nearest + " ..." , dbgNormal);
@@ -431,8 +436,14 @@ function matchMasterCalibrationFiles(pathMasterLib, fileData)
    }
    Console.writeln("Nearest dark exposure for FITS's eposure " + fileData.duration + "s is " + nearest_exposure + "s (difference = " + mindiff + ", file = " +darkexplib_filename_nearest + ")");
    dark_file_name = darkexplib_filename_nearest;
-
    CosmeticsIconExposure  = nearest_exposure;
+   if (nearest_exposure==0)
+   {
+      Console.criticalln ("Matching dark frame exposure wasn't found! Check folder with temperature for masterdark availability for exposure: " + fileData.duration + "s");
+      return false;
+
+   }
+
 
 	// Begin search for flats based on folder date
    debug ("Scaning for available flats packs in " + pathMasterLib + " ...", dbgNormal);
@@ -481,6 +492,11 @@ function matchMasterCalibrationFiles(pathMasterLib, fileData)
       }
    }
    Console.writeln("Suitable flat pack date is " + flatsdate_nearest + " (differenceInt = " + mindiff + ", folder = " +flatsdate_dirname_nearest + ")");
+   if (flatsdate_nearest==0)
+   {
+      Console.criticalln ("Matching flats frames date wasn't found! Check flats library folder names and availability for given date: " + fileData.date + "");
+      return false;
+   }
 
 	// Begin search for matching filter
    debug ("Scaning for avaliable filters in " + pathMasterLib + "/" + flatsdate_dirname_nearest + " ...", dbgNormal);
@@ -526,6 +542,11 @@ function matchMasterCalibrationFiles(pathMasterLib, fileData)
    }
    Console.writeln("Matching filter is " + filtername + " (file = " +filterfilename + ")");
    flat_file_name = filterfilename;
+   if (flatsdate_nearest==0)
+   {
+      Console.criticalln ("Matching flat frames for FITS filter wasn't found! Check masterflats availability for given filter: " + fileData.filter+ "");
+      return false;
+   }
 
 
    // Check if all needed masters found
@@ -547,19 +568,18 @@ function matchMasterCalibrationFiles(pathMasterLib, fileData)
       return false;
    }
 
-
    var full_bias_file_name = pathMasterLib + "/" + templib_dirname_nearest + "/" + bias_file_name;
    var full_dark_file_name = pathMasterLib + "/" + templib_dirname_nearest + "/" + dark_file_name;
    var full_flat_file_name = pathMasterLib + "/" + flatsdate_dirname_nearest + "/" + flat_file_name;
 
-   Console.writeln("Full bias filename: '" + full_bias_file_name + "'");
-   Console.writeln("Full dark filename: '" + full_dark_file_name + "'");
-   Console.writeln("Full flat filename: '" + full_flat_file_name + "'");
+   Console.noteln("Materbias filename: <b>" + full_bias_file_name + "</b>");
+   Console.noteln("Masterdark filename: <b>" + full_dark_file_name + "</b>");
+   Console.noteln("Masterflat filename: <b>" + full_flat_file_name + "</b>");
 
    return {
-      masterbias:    full_bias_file_name,              // was Vitar/MakF10 or (for me) just SW250
-      masterdark:    full_dark_file_name,  // 2016-10-13
-      masterflat:    full_flat_file_name,  // 23_15
+      masterbias:    full_bias_file_name,
+      masterdark:    full_dark_file_name,
+      masterflat:    full_flat_file_name,
    };
 }
 
@@ -611,7 +631,7 @@ function calibrateFITSFile(fileName)
    mastersFiles = matchMasterCalibrationFiles (cfgCalibratationMastersPath + (cgfUseBiningFolder? "/bin" + fileData.bin : "")+ "/" + fileData.instrument, fileData);
    if (! mastersFiles)
    {
-      Console.warningln("Skipping calibration because master calibration file(s) not found");
+      Console.warningln("Skipping calibration because master calibration file(s) was not found");
       return fileName;
    }
 
@@ -779,7 +799,6 @@ function cosmeticFit(fileName)
  * @param fileName string Имя файла.fit
  **********************************************************
  */
-
 function getRegistrationReferenceFile (objectname)
 {
 
@@ -866,7 +885,7 @@ function registerFits(files)
    var referenceFile = getRegistrationReferenceFile( fileData.object );
    if (!referenceFile)
    {
-      Console.warningln("Reference file not found for object " + fileData.object + ". Skipping ImageRegistration");
+      Console.warningln("Reference file was not found for object " + fileData.object + ". Skipping ImageRegistration");
       return files;
    }
 
@@ -978,7 +997,7 @@ function getNormalizationReferenceFile (objectname, filtername, exposure)
 {
 
    console.writeln();
-   console.noteln("Searching for matching Normalization Reference file for object <b>", objectname, "</b>, filter <b>" + filtername + "</b>, exposure <b>" + exposure + "s</b>");
+   console.noteln("Searching for matching Normalization Reference file for object <b>", objectname, "</b>, filter <b>" + filtername + "</b> and exposure <b>" + exposure + "s</b>");
    console.writeln();
 
    //1. Search lib dir for folders
@@ -1059,7 +1078,7 @@ function localNormalization(files)
    var referenceFile = getNormalizationReferenceFile( fileData.object, fileData.filter, fileData.exposure );
    if (!referenceFile)
    {
-      Console.warningln("Reference file not found for object <b>" + fileData.object + "</b> and filter <b>" + fileData.filter + "</b>, exposure <b>" + fileData.exposure + "s</b>. Skipping LocalNormalization");
+      Console.warningln("Reference file was not found for object <b>" + fileData.object + "</b>, filter <b>" + fileData.filter + "</b> and exposure <b>" + fileData.exposure + "s</b>. Skipping LocalNormalization");
       return files;
    }
 
