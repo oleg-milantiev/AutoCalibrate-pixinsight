@@ -101,7 +101,7 @@ var cfgNeedNormalization  = true;
 
 //Пути к файлам
 //Папка с исходными фитами
-var cfgInputPath = 'e:/DSlrRemote/-LeoTrio1/calibrated'; // без финального "/" (@todo убрать. если есть)
+var cfgInputPath = 'e:/DSlrRemote/-LeoTrio1/test'; // без финального "/" (@todo убрать. если есть)
 //Искать в подпапках? В комбинации с cfgUseRelativeOutputPath будет просматривать все вложенные папки с калиброванными фитами!
 var cfgSearchInSubDirs = true;
 
@@ -234,3 +234,33 @@ var NormalizedOutputPath= ""; // инициализация как глобал�
 
 var CosmeticsIconTemperature = 0; // инициализация как глобальной переменной. Дальше ей будет присваиваться значение внутри функции
 var CosmeticsIconExposure  = 0;// инициализация как глобальной переменной. Дальше ей будет присваиваться значение внутри функции
+
+
+
+var FITS_ARRAY = {};
+
+function fitsfullname (fitsfilename)
+{
+	
+}
+/*
+var FITSel = {
+  fits: "John",
+  fullfits: "John",
+  calibrated : "Doe",
+  cosmetized : "Doe",
+  registered : "Doe",
+  normalized : "Doe",
+};
+
+function FITSObj(fitsname, fitsfullname, calibrated, cosmetized, registered, normalized){
+  this.fitsname = fitsname;
+  this.fitsfullname = fitsfullname;
+  this.calibrated = calibrated;
+  this.cosmetized = cosmetized;
+  this.registered = registered;
+  this.normalized = normalized;
+}
+fitsel= new FITSObj();
+FITS_ARRAY.push(fitsel); 
+*/

@@ -98,13 +98,19 @@ registerFits(['c:/Users/bemchenko/Documents/DSlrRemote/test calibration/M63_2019
 //var normref = getNormalizationReferenceFile(fileData.object, fileData.filter));
 console.noteln( localNormalization([filenametest]) );
 
-*/
 var filenametest='e:/DSlrRemote/M109/calibrated/registered/M109_20180424_Ha_600s_1x1_-25degC_0.0degN_000007687_c_cc_r.fit';
 FilterOutFITS(filenametest);
+var filenametest='e:/DSlrRemote/-LeoTrio1/calibrated/cosmetized/LeoTrio1_20190118_L_600s_1x1_-30degC_0.0degN_000011908_c_cc.fit';
+FilterOutFITS(filenametest);
+
+debug(checkFileNeedCalibratation("e:/DSlrRemote/-LeoTrio1/calibrated/cosmetized/LeoTrio1_20190118_L_600s_1x1_-30degC_0.0degN_000011908_c_cc.fit"));
+
+*/
+
 
 // START FILE SEARCH
 var DirCount=0; var FileTotalCount=0;
-//searchDirectory(cfgInputPath);
+searchDirectory(cfgInputPath);
 
 
 //Finish working
@@ -295,10 +301,10 @@ function getFileHeaderData(fileName)
  * @param file string Имя пути/файла
  * @return bool
  */
-function checkFileNeedCalibratation(file)
+function checkFileNeedCalibratation_old(file)
 {
    // Проверим, на входе не файл ли, который уже калибровался?
-   if (file.match(/_c.fit$/) || file.match(/_c_cc.fit$/) || file.match(/_cc_r.fit$/)) {
+   if (file.match(/_c.fit$/) || file.match(/_c_cc.fit$/) || file.match(/_c_cc_r.fit$/) || file.match(/_c_cc_r_n.fit$/) || file.match(/_c_cc_r_n_a.fit$/)) {
       return false;
    }
 
@@ -314,6 +320,75 @@ function checkFileNeedCalibratation(file)
   return true;
 }
 
+
+/**
+ * Этот фит нужно калибровать? Нет ли уже готового такого?
+ *
+ * @param file string Имя пути/файла
+ * @return bool
+ */
+function checkFileNeedCalibratation(file)
+{
+   //fn=file.match(/(.+)\/(.+)_c_cc.fit$/);
+   //debug("file :" + file);
+   //debug("test: " + (file.match(/_c_cc.fit$/) != null));
+
+   // Проверим, на входе не файл ли, который уже калибровался?
+   if ((fn=file.match(/(.+)\/(.+)_c.fit$/i)) != null)
+   {
+      debug("path: " +fn[1]);
+      debug("matched: " +fn[2]);
+      debug("file is calibrated of " +fn[2]);
+      return false;
+   }
+   else if ((fn=file.match(/(.+)\/(.+)_c_cc.fit$/i)) != null)
+   {
+      debug("path: " +fn[1]);
+      debug("matched: " +fn[2]);
+      debug("file is cosmetized of " +fn[2]);
+      return false;
+   }
+   else if ((fn=file.match(/(.+)\/(.+)_c_cc_r.fit$/i)) != null)
+   {
+      debug("path: " +fn[1]);
+      debug("matched: " +fn[2]);
+      debug("file is registered of " +fn[2]);
+      return false;
+   }
+   else if ((fn=file.match(/(.+)\/(.+)_c_cc_r_n.fit$/i)) != null)
+   {
+      debug("path: " +fn[1]);
+      debug("matched: " +fn[2]);
+      debug("file is normalized of " +fn[2]);
+      return false;
+   }
+   else if ((fn=file.match(/(.+)\/(.+)_c_cc_r_n_a.fit$/i)) != null)
+   {
+      debug("path: " +fn[1]);
+      debug("matched: " +fn[2]);
+      debug("file is approved of " +fn[2]);
+      return false;
+   }
+   else
+   {
+      fn=file.match(/(.+)\/(.+).fit$/i);
+      debug("path: " +fn[1]);
+      debug("matched: " +fn[2]);
+      return true;
+   }
+
+
+   /*
+   // Проверим, а нет ли уже такого откалиброванного файла?
+   var CalibratedFileName = CalibratedOutputPath +'/'+ File.extractName(file) +'_c.fit';
+   var fileExistsFlag = File.exists( CalibratedFileName );
+   Console.warningln('File '+ CalibratedFileName + ' already exists, skipping calibration' );
+
+   return !fileExistsFlag;
+   */
+
+  return true;
+}
 
 
 /**
